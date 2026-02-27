@@ -1,0 +1,7 @@
+requests
+beautifulsoup4
+pandas
+pyarrow
+
+real_estate_analytics/raw
+# boto3

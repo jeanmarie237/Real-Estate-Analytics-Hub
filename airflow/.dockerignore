@@ -1,0 +1,37 @@
+# ─── Astro CLI runtime (non nécessaire dans l'image) ─────────────────────────
+astro
+.git
+.env
+airflow_settings.yaml
+
+# ─── Airflow runtime (générés dynamiquement) ──────────────────────────────────
+logs/
+airflow.db
+airflow.cfg
+airflow-webserver.pid
+webserver_config.py
+
+# ─── Python ───────────────────────────────────────────────────────────────────
+.venv
+venv
+dbt_venv
+__pycache__
+*.py[cod]
+*.pyo
+
+# ─── dbt build artifacts (non nécessaires dans l'image — générés à l'exécution) ─
+include/dbt/real_estate_analytics/target/
+include/dbt/real_estate_analytics/dbt_packages/
+include/dbt/real_estate_analytics/logs/
+
+# ─── Données brutes DVF (JAMAIS dans l'image Docker — jusqu'à 2.6 GB) ─────────
+include/dbt/real_estate_analytics/raw/
+data/
+
+# ─── DAGs dépaysés dans le projet dbt (héritage — à supprimer) ───────────────
+include/dbt/real_estate_analytics/dags/
+
+# ─── Dev / tests locaux ───────────────────────────────────────────────────────
+.DS_Store
+*.swp
+*.swo

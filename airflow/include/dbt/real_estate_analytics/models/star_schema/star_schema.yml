@@ -1,0 +1,74 @@
+version: 2
+
+models:
+
+  - name: dim_date
+    description: >
+      Dimension temporelle — couvre 2020-01-01 à 2026-12-31.
+      Clé : date_key (INTEGER YYYYMMDD). Utilisée pour filtrer et agréger
+      par année, trimestre, mois, semaine dans Power BI.
+    columns:
+      - name: date_key
+        tests: [unique, not_null]
+      - name: date_complete
+        tests: [unique, not_null]
+      - name: annee
+        tests: [not_null]
+
+  - name: dim_geography
+    description: >
+      Dimension géographique — grain commune × code_postal × département.
+      Enrichie avec nom_departement et région (via seed ref_departements).
+      Clé : geo_key (MD5 surrogate key).
+    columns:
+      - name: geo_key
+        tests: [unique, not_null]
+      - name: commune
+        tests: [not_null]
+      - name: code_departement
+        tests: [not_null]
+      - name: region
+        tests: [not_null]
+
+  - name: dim_type_bien
+    description: >
+      Dimension type de bien immobilier.
+      Enrichie avec catégorie métier (Résidentiel / Commercial / Dépendance)
+      et libellé lisible pour Power BI.
+      Clé : type_bien_key (MD5 surrogate key).
+    columns:
+      - name: type_bien_key
+        tests: [unique, not_null]
+      - name: categorie
+        tests: [not_null]
+
+  - name: dim_nature_mutation
+    description: >
+      Dimension nature de la mutation (vente, donation, échange, expropriation...).
+      Inclut is_vente_marchande pour filtrer les transactions de marché.
+      Clé : nature_key (MD5 surrogate key).
+    columns:
+      - name: nature_key
+        tests: [unique, not_null]
+      - name: famille
+        tests: [not_null]
+
+  - name: fact_mutations
+    description: >
+      Table de faits centrale du modèle en étoile.
+      Granularité : 1 ligne = 1 mutation immobilière unique.
+      Mesures : valeur_fonciere, surface_reelle_bati, surface_terrain,
+                nombre_pieces_principales, prix_metre_carre.
+      FK : date_key → dim_date | geo_key → dim_geography
+           type_bien_key → dim_type_bien | nature_key → dim_nature_mutation
+    columns:
+      - name: mutation_id
+        tests: [unique, not_null]
+      - name: date_key
+        tests: [not_null]
+      - name: geo_key
+        tests: [not_null]
+      - name: type_bien_key
+        tests: [not_null]
+      - name: nature_key
+        tests: [not_null]

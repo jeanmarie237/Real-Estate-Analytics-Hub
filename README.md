@@ -40,8 +40,8 @@ The architecture follows the **Medallion pattern** (Bronze → Silver → Gold) 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                        DATA SOURCE                                      │
-│   data.gouv.fr  ──── DVF Open Data (pipe-delimited CSV, semi-annual)   │
-│                       DGFiP · Licence Ouverte 2.0                      │
+│   data.gouv.fr  ──── DVF Open Data (pipe-delimited CSV, semi-annual)    │
+│                       DGFiP · Licence Ouverte 2.0                       │
 └──────────────────────────────┬──────────────────────────────────────────┘
                                │  REST API + ZIP download
                     ┌──────────▼──────────┐
@@ -56,7 +56,7 @@ The architecture follows the **Medallion pattern** (Bronze → Silver → Gold) 
                     └──────────┬──────────┘
                                │  COPY INTO via Snowflake External Stage
 ┌──────────────────────────────▼──────────────────────────────────────────┐
-│                    Snowflake  ·  DVF_DB                                  │
+│                    Snowflake  ·  DVF_DB                                 │
 │                                                                         │
 │  DEV_BRONZE  (raw load)                                                 │
 │  ├── mutations_foncieres      TABLE  ← COPY INTO (MATCH_BY_COLUMN_NAME) │

@@ -1,0 +1,53 @@
+version: 2
+
+models:
+
+  - name: prix_moyen_commune
+    description: >
+      Indicateurs de prix immobilier par commune et type de bien.
+      Utilisé pour l'analyse du marché local.
+    columns:
+      - name: commune
+        tests: [not_null]
+
+      - name: type_local
+        description: NULL pour les terrains sans construction — comportement normal DVF
+        tests:
+          - not_null:
+              config:
+                severity: warn
+
+      - name: prix_moyen
+        description: Prix moyen des transactions
+        tests: [not_null]
+
+  - name: prix_m2_commune
+    description: >
+      Prix moyen au m² par commune et type de bien.
+    columns:
+      - name: commune
+        tests: [not_null]
+
+      - name: prix_m2_moyen
+        tests:
+          - not_null
+
+  - name: volume_mensuel
+    description: >
+      Volume mensuel des transactions immobilières.
+    columns:
+      - name: mois
+        tests: [not_null]
+
+      - name: nb_transactions
+        tests: [not_null]
+
+  - name: top_communes
+    description: >
+      Classement des communes les plus chères (minimum 50 transactions).
+    columns:
+      - name: commune
+        tests: [not_null]
+
+      - name: prix_moyen
+        tests: [not_null]

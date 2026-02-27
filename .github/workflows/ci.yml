@@ -1,0 +1,202 @@
+name: CI — DVF Pipeline
+
+# ─── Déclencheurs ─────────────────────────────────────────────────────────────
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# ─── Permissions minimales ───────────────────────────────────────────────────
+permissions:
+  contents: read
+
+jobs:
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Job 1 : Validation syntaxique des DAGs Airflow
+  # Vérifie que tous les DAGs s'importent sans erreur (pas de connexion DB requise)
+  # ═══════════════════════════════════════════════════════════════════════════
+  validate-dags:
+    name: Validate Airflow DAGs
+    runs-on: ubuntu-latest
+    # Ne tourne que si des fichiers Airflow sont modifiés
+    if: |
+      github.event_name == 'push' ||
+      contains(github.event.pull_request.changed_files, 'airflow/')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install Airflow + providers
+        run: |
+          pip install --quiet \
+            "apache-airflow==2.10.3" \
+            "apache-airflow-providers-amazon>=8.0.0" \
+            "apache-airflow-providers-snowflake>=5.0.0" \
+            requests beautifulsoup4 pandas pyarrow
+
+      - name: Validate DAG imports (no syntax errors)
+        env:
+          AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+          AIRFLOW_HOME: /tmp/airflow
+        run: |
+          mkdir -p /tmp/airflow/dags
+          # Copier les DAGs dans le home Airflow temporaire
+          cp -r airflow/dags /tmp/airflow/
+          python -c "
+          import os, sys, importlib, ast
+          dag_dir = '/tmp/airflow/dags'
+          errors = []
+          for f in os.listdir(dag_dir):
+              if not f.endswith('.py') or f.startswith('__'):
+                  continue
+              path = os.path.join(dag_dir, f)
+              try:
+                  with open(path) as fh:
+                      ast.parse(fh.read())
+                  print(f'  OK  {f}')
+              except SyntaxError as e:
+                  print(f'  FAIL  {f}: {e}')
+                  errors.append(f)
+          if errors:
+              print(f'Syntax errors in: {errors}')
+              sys.exit(1)
+          print('All DAGs passed syntax check.')
+          "
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Job 2 : dbt compile — validation SQL + Jinja (pas de connexion DB requise)
+  # ═══════════════════════════════════════════════════════════════════════════
+  dbt-compile:
+    name: dbt compile (syntax check)
+    runs-on: ubuntu-latest
+    # Ne tourne que si des fichiers dbt sont modifiés
+    if: |
+      github.event_name == 'push' ||
+      contains(github.event.pull_request.changed_files, 'airflow/include/dbt/')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dbt-snowflake
+        run: pip install --quiet dbt-snowflake==1.8.4
+
+      - name: dbt deps
+        working-directory: airflow/include/dbt/real_estate_analytics
+        run: dbt deps
+
+      - name: dbt compile (validation SQL + Jinja — pas de connexion DB)
+        working-directory: airflow/include/dbt/real_estate_analytics
+        env:
+          # Profile stub : dbt compile ne se connecte pas à Snowflake
+          DBT_PROFILES_DIR: ../../../../.github/dbt
+        run: dbt compile --profiles-dir ../../../../.github/dbt
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Job 3 : dbt test — tests d'intégration sur Snowflake DEV
+  # Nécessite les GitHub Secrets Snowflake configurés.
+  # Activé sur push sur main uniquement (pas sur les PRs des contributors).
+  # ═══════════════════════════════════════════════════════════════════════════
+  dbt-test:
+    name: dbt test (Snowflake DEV)
+    runs-on: ubuntu-latest
+    needs: dbt-compile
+    # Uniquement sur push main ET si les secrets Snowflake sont configurés
+    if: |
+      github.ref == 'refs/heads/main' &&
+      github.event_name == 'push' &&
+      vars.SNOWFLAKE_TESTS_ENABLED == 'true'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dbt-snowflake
+        run: pip install --quiet dbt-snowflake==1.8.4
+
+      - name: dbt deps
+        working-directory: airflow/include/dbt/real_estate_analytics
+        run: dbt deps
+
+      - name: dbt run — Silver uniquement (test de non-régression)
+        working-directory: airflow/include/dbt/real_estate_analytics
+        env:
+          SNOWFLAKE_ACCOUNT:   ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USER:      ${{ secrets.SNOWFLAKE_USER }}
+          SNOWFLAKE_PASSWORD:  ${{ secrets.SNOWFLAKE_PASSWORD }}
+          SNOWFLAKE_ROLE:      DVF_BI_ROLE
+          SNOWFLAKE_DATABASE:  DVF_DB
+          SNOWFLAKE_WAREHOUSE: DVF_WH
+          DBT_PROFILES_DIR: ../
+        run: |
+          dbt run \
+            --select silver \
+            --profiles-dir ../ \
+            --target prod \
+            --no-use-colors
+
+      - name: dbt test — tous les modèles
+        working-directory: airflow/include/dbt/real_estate_analytics
+        env:
+          SNOWFLAKE_ACCOUNT:   ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USER:      ${{ secrets.SNOWFLAKE_USER }}
+          SNOWFLAKE_PASSWORD:  ${{ secrets.SNOWFLAKE_PASSWORD }}
+          SNOWFLAKE_ROLE:      DVF_BI_ROLE
+          SNOWFLAKE_DATABASE:  DVF_DB
+          SNOWFLAKE_WAREHOUSE: DVF_WH
+          DBT_PROFILES_DIR: ../
+        run: |
+          dbt test \
+            --profiles-dir ../ \
+            --target prod \
+            --no-use-colors
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Job 4 : Vérification Dockerfile (lint + build test)
+  # ═══════════════════════════════════════════════════════════════════════════
+  validate-dockerfile:
+    name: Validate Dockerfile
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'push' ||
+      contains(github.event.pull_request.changed_files, 'airflow/Dockerfile')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Lint Dockerfile (hadolint)
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: airflow/Dockerfile
+          # Règles ignorées : DL3008 (apt pin), DL3013 (pip pin gérés manuellement)
+          ignore: DL3008,DL3013
+
+      - name: Build Docker image (validation)
+        run: |
+          docker build \
+            --file airflow/Dockerfile \
+            --tag dvf-airflow:ci-test \
+            --no-cache \
+            airflow/

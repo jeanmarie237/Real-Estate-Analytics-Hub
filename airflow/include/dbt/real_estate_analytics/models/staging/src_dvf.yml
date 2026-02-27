@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: dvf
+    database: DVF_DB
+    schema: DEV_BRONZE
+    tables:
+      - name: mutations_foncieres
+        description: "Données DVF brutes chargées depuis S3"

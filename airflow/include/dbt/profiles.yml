@@ -1,0 +1,48 @@
+# ============================================================
+# dbt Profiles — DVF Real Estate Analytics
+# ============================================================
+# Les credentials sont injectés via des variables d'environnement.
+# Ne jamais hardcoder de credentials dans ce fichier.
+#
+# Variables requises (à définir dans Astronomer UI ou .env local) :
+#   SNOWFLAKE_ACCOUNT   : ex. ZPSXDDX-FD93437.snowflakecomputing.com
+#   SNOWFLAKE_USER      : utilisateur Snowflake
+#   SNOWFLAKE_PASSWORD  : mot de passe Snowflake
+#
+# Variables optionnelles (valeurs par défaut fournies) :
+#   SNOWFLAKE_ROLE      : DVF_BI_ROLE
+#   SNOWFLAKE_DATABASE  : DVF_DB
+#   SNOWFLAKE_WAREHOUSE : DVF_WH
+# ============================================================
+
+real_estate_analytics:
+  target: prod
+  outputs:
+
+    # ── Production (Astronomer / Airflow) ──────────────────────────────────────
+    prod:
+      type: snowflake
+      account:   "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user:      "{{ env_var('SNOWFLAKE_USER') }}"
+      password:  "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role:      "{{ env_var('SNOWFLAKE_ROLE',      'DVF_BI_ROLE') }}"
+      database:  "{{ env_var('SNOWFLAKE_DATABASE',  'DVF_DB') }}"
+      warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE', 'DVF_WH') }}"
+      schema: DEV          # Schema par défaut (les modèles surclassent via +schema)
+      threads: 10
+      client_session_keep_alive: false
+      query_tag: "dbt_airflow_prod"
+
+    # ── Développement local ────────────────────────────────────────────────────
+    dev:
+      type: snowflake
+      account:   "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user:      "{{ env_var('SNOWFLAKE_USER') }}"
+      password:  "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role:      "{{ env_var('SNOWFLAKE_ROLE',      'DVF_BI_ROLE') }}"
+      database:  "{{ env_var('SNOWFLAKE_DATABASE',  'DVF_DB') }}"
+      warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE', 'DVF_WH') }}"
+      schema: DEV
+      threads: 10
+      client_session_keep_alive: false
+      query_tag: "dbt_local_dev"

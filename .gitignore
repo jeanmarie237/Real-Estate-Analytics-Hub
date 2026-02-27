@@ -1,0 +1,64 @@
+# ─── Data brutes (NEVER commit — fichiers DVF jusqu'à 2.6 GB) ─────────────────
+airflow/data/
+
+# ─── dbt build artifacts (générés à l'exécution) ─────────────────────────────
+airflow/include/dbt/real_estate_analytics/target/
+airflow/include/dbt/real_estate_analytics/dbt_packages/
+airflow/include/dbt/real_estate_analytics/logs/
+airflow/include/dbt/real_estate_analytics/raw/
+
+# ─── dbt profiles (contient les credentials — géré via env vars en prod) ──────
+# NB : airflow/include/dbt/profiles.yml EST commité (utilise env_var(), pas de secrets)
+# Exclure uniquement les profiles à la racine ou dans le home dbt
+~/.dbt/profiles.yml
+
+# ─── Airflow local runtime (généré par astro dev start) ───────────────────────
+airflow/.env
+airflow/airflow.cfg
+airflow/airflow.db
+airflow/webserver_config.py
+airflow/airflow-webserver.pid
+airflow/airflow_settings.yaml    # Template commité uniquement si sans credentials réels
+airflow/astro/
+
+# ─── Logs ─────────────────────────────────────────────────────────────────────
+logs/
+*.log
+
+# ─── Python ───────────────────────────────────────────────────────────────────
+.venv/
+venv/
+dbt_venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# ─── Environment & credentials (NEVER commit) ─────────────────────────────────
+.env
+.env.*
+!.env.example
+!airflow/.env.example
+*.pem
+*.key
+
+# ─── OS & éditeurs ────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ─── Claude Code internal ──────────────────────────────────────────────────────
+.claude/
+
+
+POWERBI_DESIGN.md
+logs/
+docs/
+

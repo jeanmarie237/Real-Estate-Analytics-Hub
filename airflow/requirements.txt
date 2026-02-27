@@ -1,0 +1,22 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# IMPORTANT : Astro Runtime 3.1 pré-installe déjà les providers Airflow.
+# NE PAS déclarer apache-airflow-providers-* ici — cela force uv à résoudre
+# des versions plus récentes qui tirent des dépendances lourdes (duckdb, etc.)
+#
+# Providers déjà inclus dans l'image de base :
+#   - apache-airflow-providers-amazon  (S3Hook, etc.)
+#   - apache-airflow-providers-snowflake (SnowflakeOperator, SnowflakeHook)
+#   - apache-airflow-providers-http
+#   - ... (voir https://www.astronomer.io/docs/astro/runtime-image-architecture)
+# ─────────────────────────────────────────────────────────────────────────────
+
+apache-airflow-providers-amazon 
+apache-airflow-providers-snowflake
+
+# ─── HTTP & parsing ───────────────────────────────────────────────────────────
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+
+# ─── Data processing ─────────────────────────────────────────────────────────
+pandas>=2.0.0
+pyarrow>=14.0.0

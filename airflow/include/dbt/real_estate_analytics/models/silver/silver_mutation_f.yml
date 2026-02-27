@@ -1,0 +1,45 @@
+version: 2
+
+models:
+  - name: silver_mutation_f
+    description: >
+      Table SILVER des mutations foncières. Les données sont nettoyées depuis BRONZE :
+      - doublons supprimés
+      - types corrects (REAL, INTEGER)
+      - clé synthétique `mutation_id` générée pour l incrémental.
+    columns:
+      - name: mutation_id
+        description: Clé unique générée via MD5 pour identifier chaque transaction
+        tests:
+          - unique
+          - not_null
+      - name: date_mutation
+        # description: Date de la mutation
+        # tests:
+        #   - not_null
+      - name: valeur_fonciere
+        description: Valeur foncière en euros (REAL) — NULL pour donations/échanges
+        tests:
+          - not_null:
+              config:
+                severity: warn
+      - name: prix_metre_carre
+        tests:
+          - not_null:
+              where: "surface_reelle_bati > 0"
+              config:
+                severity: warn
+      # - name: surface_reelle_bati
+      #   description: Surface réelle bâtie en m² (REAL)
+      # - name: nombre_pieces_principales
+      #   description: Nombre de pièces principales (INTEGER)
+      # - name: surface_terrain
+      #   description: Surface du terrain en m² (REAL)
+      # - name: commune
+      #   description: Nom de la commune
+      # - name: code_postal
+      #   description: Code postal
+      # - name: type_local
+      #   description: Type de bien (Maison, Appartement, etc.)
+      # - name: nature_mutation
+      #   description: Nature de la mutation (Vente, Donation, etc.)

@@ -1,0 +1,40 @@
+version: 2
+
+models:
+
+  - name: gold_kpis
+    description: >
+      KPIs globaux pour les cartes de synthèse du dashboard Power BI.
+      Une seule ligne : agrégats France entière sur toute la période 2020-2025.
+    columns:
+      - name: total_transactions
+        tests: [not_null]
+      - name: prix_moyen_france
+        tests: [not_null]
+      - name: volume_financier_total
+        tests: [not_null]
+
+  - name: prix_par_departement
+    description: >
+      Prix moyen, prix médian, prix au m² et volume par département et type de bien.
+      Utilisé pour la carte choroplèthe Power BI (code_departement = clé de jointure).
+    columns:
+      - name: code_departement
+        tests: [not_null]
+      - name: nb_transactions
+        tests: [not_null]
+      - name: prix_moyen
+        tests: [not_null]
+
+  - name: evolution_annuelle
+    description: >
+      Évolution annuelle des prix et volumes par type de bien.
+      Inclut variation_prix_pct et variation_volume_pct (glissement annuel).
+      Utilisé pour les graphes de tendance et les comparaisons YoY.
+    columns:
+      - name: annee
+        tests: [not_null]
+      - name: nb_transactions
+        tests: [not_null]
+      - name: prix_moyen
+        tests: [not_null]
