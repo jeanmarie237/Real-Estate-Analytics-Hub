@@ -90,7 +90,7 @@ The architecture follows the **Medallion pattern** (Bronze → Silver → Gold) 
 └──────────────────────────────┬──────────────────────────────────────────┘
                                │  Import mode (< 50 MB, < 90s refresh)
                     ┌──────────▼──────────┐
-                    │     Power BI        │  Analytics dashboards
+                    │     Power BI        │   Analytics dashboards
                     │  Composite model    │  
                     └─────────────────────┘
 ```
