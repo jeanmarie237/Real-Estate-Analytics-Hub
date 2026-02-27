@@ -62,4 +62,3 @@ POWERBI_DESIGN.md
 logs/
 docs/
 
-airflow/include/dbt/real_estate_analytics/seeds/ref_departements.csv

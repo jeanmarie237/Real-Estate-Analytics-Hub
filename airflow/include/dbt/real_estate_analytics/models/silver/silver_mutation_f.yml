@@ -26,8 +26,8 @@ models:
       - name: prix_metre_carre
         tests:
           - not_null:
-              where: "surface_reelle_bati > 0"
               config:
+                where: "surface_reelle_bati > 0"
                 severity: warn
       # - name: surface_reelle_bati
       #   description: Surface réelle bâtie en m² (REAL)
