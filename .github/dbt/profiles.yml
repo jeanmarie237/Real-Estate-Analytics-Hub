@@ -1,16 +1,11 @@
-# Stub profile for dbt compile in CI.
-# dbt compile only parses SQL and Jinja — it does NOT connect to the database.
-# Snowflake credentials are therefore not required here.
+# Stub profile for dbt parse in CI.
+# Uses DuckDB (in-memory, no network) so dbt parse never connects to Snowflake.
+# dbt parse validates refs, sources, Jinja, YAML — no SQL execution.
 real_estate_analytics:
   target: ci
   outputs:
     ci:
-      type: snowflake
-      account: "stub-account-for-compile-only"
-      user: "ci"
-      password: "ci"
-      role: DVF_BI_ROLE
-      database: DVF_DB
-      warehouse: DVF_WH
-      schema: DEV
+      type: duckdb
+      path: ':memory:'
       threads: 1
+      schema: DEV

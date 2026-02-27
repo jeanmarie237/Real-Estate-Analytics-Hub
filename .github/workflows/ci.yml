@@ -93,18 +93,18 @@ jobs:
           python-version: "3.12"
           cache: pip
 
-      - name: Install dbt-snowflake
-        run: pip install --quiet dbt-snowflake==1.8.4
+      - name: Install dbt-duckdb (parse uniquement — zéro connexion réseau)
+        run: pip install --quiet dbt-duckdb
 
       - name: dbt deps
         working-directory: airflow/include/dbt/real_estate_analytics
-        run: dbt deps
+        env:
+          DBT_PROFILES_DIR: ${{ github.workspace }}/.github/dbt
+        run: dbt deps --profiles-dir $GITHUB_WORKSPACE/.github/dbt
 
       - name: dbt parse (validation graphe + Jinja — aucune connexion DB)
         working-directory: airflow/include/dbt/real_estate_analytics
-        env:
-          DBT_PROFILES_DIR: ../../../../.github/dbt
-        run: dbt parse --profiles-dir ../../../../.github/dbt
+        run: dbt parse --profiles-dir $GITHUB_WORKSPACE/.github/dbt
 
   # ═══════════════════════════════════════════════════════════════════════════
   # Job 3 : dbt test — tests d'intégration sur Snowflake DEV
