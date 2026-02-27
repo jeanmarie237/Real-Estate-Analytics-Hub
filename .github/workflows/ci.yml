@@ -100,12 +100,11 @@ jobs:
         working-directory: airflow/include/dbt/real_estate_analytics
         run: dbt deps
 
-      - name: dbt compile (validation SQL + Jinja — pas de connexion DB)
+      - name: dbt parse (validation graphe + Jinja — aucune connexion DB)
         working-directory: airflow/include/dbt/real_estate_analytics
         env:
-          # Profile stub : dbt compile ne se connecte pas à Snowflake
           DBT_PROFILES_DIR: ../../../../.github/dbt
-        run: dbt compile --profiles-dir ../../../../.github/dbt --no-populate-cache --full-refresh
+        run: dbt parse --profiles-dir ../../../../.github/dbt
 
   # ═══════════════════════════════════════════════════════════════════════════
   # Job 3 : dbt test — tests d'intégration sur Snowflake DEV
