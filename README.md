@@ -449,7 +449,7 @@ Full specification: [POWERBI_DESIGN.md](POWERBI_DESIGN.md)
 ## Data Source
 
 - **Dataset:** [Demandes de Valeurs Foncières (DVF)](https://www.data.gouv.fr/fr/datasets/demandes-de-valeurs-foncieres/)
-- **Publisher:** Direction Générale des Finances Publiques (DGFiP)
+- **Publisher:** Direction Générale des Finances Publiques (DGFiP) 
 - **License:** Licence Ouverte / Open Licence 2.0
 - **Update frequency:** Semi-annual (S1 in July, S2 in January)
 - **Coverage:** France nationwide including overseas territories
