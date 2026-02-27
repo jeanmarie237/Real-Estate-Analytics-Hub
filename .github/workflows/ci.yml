@@ -105,7 +105,7 @@ jobs:
         env:
           # Profile stub : dbt compile ne se connecte pas à Snowflake
           DBT_PROFILES_DIR: ../../../../.github/dbt
-        run: dbt compile --profiles-dir ../../../../.github/dbt --no-populate-cache
+        run: dbt compile --profiles-dir ../../../../.github/dbt --no-populate-cache --full-refresh
 
   # ═══════════════════════════════════════════════════════════════════════════
   # Job 3 : dbt test — tests d'intégration sur Snowflake DEV
